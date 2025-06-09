@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Box, TextField, Typography, InputAdornment } from '@mui/material';
+import { Box, TextField, Typography, InputAdornment, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import EventCard from '../components/EventCard';
 import SearchIcon from '@mui/icons-material/Search';
+import { events } from '../mockData';
 
 interface Event {
   id: number;
@@ -12,78 +13,130 @@ interface Event {
   location: string;
   price: number;
   image: string;
-  seatsLeft: number;
+  totalSeats: number;
+  bookedSeats: number;
   organizer: string;
 }
 
-const eventData: Event[] = [
-  {
-    id: 1,
-    title: 'Tech Summit 2025',
-    description: 'Join us for an exciting tech conference with industry leaders. Experience cutting-edge technologies and network with professionals.',
-    date: 'Jul 15, 2025',
-    time: '10:00 AM',
-    location: 'Dubai',
-    price: 541,
-    image: '/techfest.png',
-    seatsLeft: 98,
-    organizer: 'Gullie Global Community Events'
-  },
-  {
-    id: 2,
-    title: 'Startup Networking',
-    description: 'Network with fellow entrepreneurs and investors. Learn about innovative startup ideas and explore collaboration opportunities.',
-    date: 'Jul 20, 2025',
-    time: '2:00 PM',
-    location: 'Silicon Valley',
-    price: 0,
-    image: '/startupTalk.png',
-    seatsLeft: 48,
-    organizer: 'Startup Hub'
-  },
-  {
-    id: 3,
-    title: 'AI & ML Workshop',
-    description: 'Hands-on workshop on the latest AI and Machine Learning technologies. Perfect for developers and tech enthusiasts.',
-    date: 'Aug 1, 2025',
-    time: '9:00 AM',
-    location: 'New York',
-    price: 299,
-    image: '/techfest.png',
-    seatsLeft: 29,
-    organizer: 'Tech Learning Hub'
-  }
-];
+type AvailabilityFilter = 'all' | 'available' | 'few' | 'full';
 
 const Events = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [availabilityFilter, setAvailabilityFilter] = useState<AvailabilityFilter>('all');
+  const [dateFilter, setDateFilter] = useState<string>('all');
 
-  const filteredEvents = eventData.filter(event =>
-    event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredEvents = events.filter((event: Event) => {
+    const matchesSearch =
+      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.location.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesAvailability =
+      availabilityFilter === 'all' ||
+      (availabilityFilter === 'available' && (event.totalSeats - event.bookedSeats) > 0) ||
+      (availabilityFilter === 'few' && (event.totalSeats - event.bookedSeats) > 0 && (event.totalSeats - event.bookedSeats) <= 10) ||
+      (availabilityFilter === 'full' && event.totalSeats === event.bookedSeats);
+
+    const matchesDate =
+      dateFilter === 'all' ||
+      (dateFilter === 'upcoming' && new Date(event.date) > new Date()) ||
+      (dateFilter === 'today' && new Date(event.date).toDateString() === new Date().toDateString());
+
+    return matchesSearch && matchesAvailability && matchesDate;
+  });
 
   return (
     <Box>
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        mb: 4,
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        justifyContent: 'space-between',
+        alignItems: { xs: 'stretch', sm: 'center' },
+        mb: { xs: 3, sm: 4 },
         gap: 2
       }}>
         <Typography 
-          variant="h4" 
+          variant="h4"
           component="h1"
           sx={{
             fontWeight: 600,
-            fontSize: '1.75rem'
+            fontSize: { xs: '1.5rem', sm: '1.75rem' },
+            mb: { xs: 1, sm: 0 }
           }}
         >
           Events
         </Typography>
-        <Box sx={{ flexGrow: 1, maxWidth: 600 }}>
+        <Box sx={{
+          display: 'flex',
+          gap: 2,
+          flexGrow: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+          maxWidth: { xs: '100%', sm: '800px' }
+        }}>
+          <FormControl
+            size="small"
+            sx={{
+              minWidth: { xs: '100%', sm: 200 },
+              backgroundColor: '#2d2d2d',
+              borderRadius: '8px',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'transparent'
+              },
+              '& .MuiSelect-select': {
+                color: 'white'
+              },
+              '& .MuiInputLabel-root': {
+                color: 'rgba(255, 255, 255, 0.7)'
+              },
+              '& .MuiSvgIcon-root': {
+                color: 'rgba(255, 255, 255, 0.7)'
+              }
+            }}
+          >
+            <InputLabel>Availability</InputLabel>
+            <Select
+              value={availabilityFilter}
+              label="Availability"
+              onChange={(e) => setAvailabilityFilter(e.target.value as AvailabilityFilter)}
+            >
+              <MenuItem value="all">All Events</MenuItem>
+              <MenuItem value="available">Available</MenuItem>
+              <MenuItem value="few">Few Seats Left</MenuItem>
+              <MenuItem value="full">Sold Out</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl
+            size="small"
+            sx={{
+              minWidth: { xs: '100%', sm: 200 },
+              backgroundColor: '#2d2d2d',
+              borderRadius: '8px',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'transparent'
+              },
+              '& .MuiSelect-select': {
+                color: 'white'
+              },
+              '& .MuiInputLabel-root': {
+                color: 'rgba(255, 255, 255, 0.7)'
+              },
+              '& .MuiSvgIcon-root': {
+                color: 'rgba(255, 255, 255, 0.7)'
+              }
+            }}
+          >
+            <InputLabel>Date</InputLabel>
+            <Select
+              value={dateFilter}
+              label="Date"
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
+              <MenuItem value="all">All Dates</MenuItem>
+              <MenuItem value="upcoming">Upcoming</MenuItem>
+              <MenuItem value="today">Today</MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             fullWidth
             variant="outlined"
@@ -118,17 +171,24 @@ const Events = () => {
         </Box>
       </Box>
 
-      <Box sx={{ 
+      <Box sx={{
         display: 'grid',
         gridTemplateColumns: {
           xs: '1fr',
           sm: 'repeat(2, 1fr)',
           md: 'repeat(3, 1fr)'
         },
-        gap: 3
+        gap: { xs: 2, sm: 3 },
+        width: '100%'
       }}>
-        {filteredEvents.map((event) => (
-          <EventCard key={event.id} event={event} />
+        {filteredEvents.map((event: Event) => (
+          <EventCard
+            key={event.id}
+            event={{
+              ...event,
+              seatsLeft: event.totalSeats - event.bookedSeats
+            }}
+          />
         ))}
       </Box>
     </Box>
