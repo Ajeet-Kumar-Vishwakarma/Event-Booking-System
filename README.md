@@ -1,62 +1,101 @@
-# Event Booking System
+# Event Booking Frontend
 
-A full-stack event booking application that allows users to create, manage, and book events.
+The frontend application for the Event Booking System, built with React, TypeScript, and Material-UI.
+
+## Current Implementation Status
+
+This is currently a frontend-only implementation using mock data. The application demonstrates the UI and interactions without a backend server.
+
+### Mock Data Implementation
+- Events, users, and bookings are stored in `mockData.ts`
+- Data is not persisted between sessions
+- Actions like creating events or making bookings will only work with the mock data
 
 ## Features
 
-- Event management with search functionality
-- User management system
-- Booking tracking with status indicators
-- Dark-themed modern UI
+### Event Management
+- View all events in a responsive grid layout
+- Filter events by availability and date
+- Create new events with:
+  - Title and description
+  - Date and time selection
+  - Location
+  - Price configuration
+  - Total seats availability
+
+### User Management
+- Display user information
+- View user's event bookings
+- Basic user data stored in mock data:
+  - Name
+  - Email
+
+### Booking Management
+- View all bookings
+- Basic booking information includes:
+  - Event details
+  - User information
+  - Booking date
 
 ## Project Structure
 
 ```
-.
-├── frontend/         # React frontend application
-│   ├── src/         # Source code
-│   ├── public/      # Static assets
-│   └── README.md    # Frontend documentation
-└── README.md        # Main project documentation
+src/
+├── components/          # Reusable components
+│   ├── Layout.tsx      # Main layout with navigation
+│   ├── EventCard.tsx   # Event display card
+│   └── CreateEventModal.tsx  # Event creation form
+├── pages/              # Page components
+│   ├── Events.tsx      # Events listing page
+│   ├── Users.tsx       # User management page
+│   └── Bookings.tsx    # Bookings listing page
+└── mockData.ts         # Mock data for events, users, and bookings
 ```
 
 ## Getting Started
 
-1. Clone the repository:
+1. Install dependencies:
 ```bash
-git clone <repository-url>
-cd event-booking-system
+npm install
 ```
 
-2. Start the frontend:
+2. Start the development server:
 ```bash
-cd frontend
-npm install
 npm start
 ```
 
 The application will be available at http://localhost:3001
 
-## Tech Stack
+## Available Scripts
 
-- Frontend:
-  - React with TypeScript
-  - Material-UI (MUI) for components
-  - React Router for navigation
+- `npm start` - Runs the app in development mode
+- `npm build` - Builds the app for production
+- `npm test` - Runs the test suite
+- `npm eject` - Ejects from Create React App
 
-## Features
+## Dependencies
 
-### Events
-- View all events with search functionality
-- Create new events with detailed information
-- Display event pricing, dates, and availability
+- React
+- TypeScript
+- Material-UI (MUI)
+- React Router DOM
+- Date-fns
 
-### Users
-- User management interface
-- Track events booked by each user
-- Add, edit, and remove users
+## Theme
 
-### Bookings
-- View all event bookings
-- Track booking status (Confirmed/Pending)
-- Display booking details with user information
+The application uses a custom dark theme with:
+- Primary color: #7c4dff (Purple)
+- Secondary color: #4caf50 (Green)
+- Background: #1a1a1a (Dark)
+- Paper background: #2d2d2d
+- Custom styled components for consistent UI
+
+## Future Improvements
+
+To make the application fully functional, the following improvements are needed:
+- Implementation of a backend server
+- Real database integration
+- User authentication and authorization
+- Persistent data storage
+- Image upload functionality
+- Advanced filtering and search capabilities
