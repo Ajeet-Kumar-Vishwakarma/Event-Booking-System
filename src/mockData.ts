@@ -2,6 +2,8 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  password: string;
+  eventsBooked: number;
 }
 
 export interface Event {
@@ -26,9 +28,9 @@ export interface Booking {
 }
 
 export const users: User[] = [
-  { id: 1, name: "Aditi Sharma", email: "aditi.sharma@example.com" },
-  { id: 2, name: "Rahul Verma", email: "rahul.verma@example.com" },
-  { id: 3, name: "Priya Patel", email: "priya.patel@example.com" }
+  { id: 1, name: "Aditi Sharma", email: "aditi.sharma@example.com", password: "hashed_password_1", eventsBooked: 5 },
+  { id: 2, name: "Rahul Verma", email: "rahul.verma@example.com", password: "hashed_password_2", eventsBooked: 3 },
+  { id: 3, name: "Priya Patel", email: "priya.patel@example.com", password: "hashed_password_3", eventsBooked: 2 }
 ];
 
 export const events: Event[] = [

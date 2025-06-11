@@ -1,21 +1,20 @@
 import { ReactNode, useState } from 'react';
 import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, AppBar, Toolbar, Typography, Button, IconButton, useMediaQuery, useTheme } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import EventIcon from '@mui/icons-material/Event';
 import PeopleIcon from '@mui/icons-material/People';
 import BookingsIcon from '@mui/icons-material/BookOnline';
 import AddIcon from '@mui/icons-material/Add';
 import MenuIcon from '@mui/icons-material/Menu';
-import CreateEventModal from './CreateEventModal';
 
 interface LayoutProps {
   children: ReactNode;
+  onCreateEvent?: () => void;
 }
 
 const drawerWidth = 240;
 
-const Layout = ({ children }: LayoutProps) => {
-  const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+const Layout = ({ children, onCreateEvent }: LayoutProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -26,20 +25,6 @@ const Layout = ({ children }: LayoutProps) => {
     { text: 'Bookings', icon: <BookingsIcon />, path: '/bookings' }
   ];
 
-  const handleCreateEvent = (eventData: any) => {
-    // Here you would typically make an API call to create the event
-    console.log('Creating event:', eventData);
-    
-    // Format the event data
-    const formattedEvent = {
-      ...eventData,
-      date: eventData.date ? new Date(eventData.date).toISOString() : null,
-      time: eventData.time ? new Date(eventData.time).toISOString() : null,
-    };
-
-    // For now, just log the formatted event data
-    console.log('Formatted event:', formattedEvent);
-  };
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -70,24 +55,26 @@ const Layout = ({ children }: LayoutProps) => {
               </Typography>
             )}
           </Box>
-          <Button
-            variant="contained"
-            startIcon={!isMobile && <AddIcon />}
-            onClick={() => setIsCreateEventOpen(true)}
-            sx={{
-              borderRadius: '8px',
-              backgroundColor: '#7c4dff',
-              '&:hover': {
-                backgroundColor: '#6c3fff'
-              },
-              textTransform: 'none',
-              fontWeight: 600,
-              minWidth: { xs: '40px', sm: 'auto' },
-              px: { xs: 2, sm: 3 }
-            }}
-          >
-            {isMobile ? <AddIcon /> : 'CREATE EVENT'}
-          </Button>
+          {useLocation().pathname === '/' && (
+            <Button
+              variant="contained"
+              startIcon={!isMobile && <AddIcon />}
+              onClick={onCreateEvent}
+              sx={{
+                borderRadius: '8px',
+                backgroundColor: '#7c4dff',
+                '&:hover': {
+                  backgroundColor: '#6c3fff'
+                },
+                textTransform: 'none',
+                fontWeight: 600,
+                minWidth: { xs: '40px', sm: 'auto' },
+                px: { xs: 2, sm: 3 }
+              }}
+            >
+              {isMobile ? <AddIcon /> : 'CREATE EVENT'}
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
       {isMobile && (
@@ -175,12 +162,6 @@ const Layout = ({ children }: LayoutProps) => {
         <Toolbar />
         {children}
       </Box>
-
-      <CreateEventModal
-        open={isCreateEventOpen}
-        onClose={() => setIsCreateEventOpen(false)}
-        onSubmit={handleCreateEvent}
-      />
     </Box>
   );
 };

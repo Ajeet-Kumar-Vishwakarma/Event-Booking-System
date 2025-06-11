@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Card, 
-  Avatar, 
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  Avatar,
   IconButton,
   Dialog,
   DialogTitle,
@@ -12,68 +12,97 @@ import {
   TextField,
   DialogActions
 } from '@mui/material';
+import Layout from '../components/Layout';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EventIcon from '@mui/icons-material/Event';
+import { User, users as initialUsers } from '../mockData';
 
-interface User {
-  id: number;
+interface UserFormData {
   name: string;
   email: string;
-  eventsBooked: number;
+  password: string;
 }
 
-const initialUsers: User[] = [
-  {
-    id: 1,
-    name: 'Aditi Sharma',
-    email: 'aditi@example.com',
-    eventsBooked: 5
-  },
-  {
-    id: 2,
-    name: 'John Doe',
-    email: 'john@example.com',
-    eventsBooked: 5
-  },
-  {
-    id: 3,
-    name: 'Sarah Wilson',
-    email: 'sarah@example.com',
-    eventsBooked: 5
-  },
-  {
-    id: 4,
-    name: 'Aj',
-    email: 'ajkumarvish@gmail.com',
-    eventsBooked: 5
-  }
-];
+const STORED_USERS_KEY = 'eventBookingSystem_users';
+const STORED_BOOKINGS_KEY = 'eventBookingSystem_bookings';
 
 const Users = () => {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<User[]>(() => {
+    const storedUsers = localStorage.getItem(STORED_USERS_KEY);
+    return storedUsers ? JSON.parse(storedUsers) : initialUsers;
+  });
   const [openDialog, setOpenDialog] = useState(false);
-  const [newUser, setNewUser] = useState({ name: '', email: '', password: '' });
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [userForm, setUserForm] = useState<UserFormData>({
+    name: '',
+    email: '',
+    password: ''
+  });
 
-  const handleAddUser = () => {
-    const user: User = {
-      id: users.length + 1,
-      name: newUser.name,
-      email: newUser.email,
-      eventsBooked: 0
-    };
-    setUsers([...users, user]);
-    setNewUser({ name: '', email: '', password: '' });
+  const handleOpenDialog = (user?: User) => {
+    if (user) {
+      setEditingUser(user);
+      setUserForm({
+        name: user.name,
+        email: user.email,
+        password: user.password
+      });
+    } else {
+      setEditingUser(null);
+      setUserForm({ name: '', email: '', password: '' });
+    }
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
     setOpenDialog(false);
+    setEditingUser(null);
+    setUserForm({ name: '', email: '', password: '' });
+  };
+
+  // Update localStorage whenever users change
+  const updateUsers = (newUsers: User[]) => {
+    setUsers(newUsers);
+    localStorage.setItem(STORED_USERS_KEY, JSON.stringify(newUsers));
+  };
+
+  const handleSubmit = () => {
+    if (editingUser) {
+      // Update existing user
+      const updatedUsers = users.map(user =>
+        user.id === editingUser.id
+          ? {
+              ...user,
+              name: userForm.name,
+              email: userForm.email,
+              password: userForm.password
+            }
+          : user
+      );
+      updateUsers(updatedUsers);
+    } else {
+      // Add new user
+      const newUser: User = {
+        id: users.length + 1,
+        name: userForm.name,
+        email: userForm.email,
+        password: userForm.password,
+        eventsBooked: 0
+      };
+      updateUsers([...users, newUser]);
+    }
+    handleCloseDialog();
   };
 
   const handleDeleteUser = (id: number) => {
-    setUsers(users.filter(user => user.id !== id));
+    const updatedUsers = users.filter(user => user.id !== id);
+    updateUsers(updatedUsers);
   };
 
   return (
-    <Box>
+    <Layout>
       <Box sx={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -93,7 +122,7 @@ const Users = () => {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setOpenDialog(true)}
+          onClick={() => handleOpenDialog()}
           sx={{ 
             borderRadius: '8px',
             backgroundColor: '#7c4dff',
@@ -117,7 +146,13 @@ const Users = () => {
         },
         gap: 3
       }}>
-        {users.map((user) => (
+        {users.map((user) => {
+          // Count user's bookings
+          const storedBookings = localStorage.getItem(STORED_BOOKINGS_KEY);
+          const bookings = storedBookings ? JSON.parse(storedBookings) : [];
+          const userBookings = bookings.filter((booking: any) => booking.userId === user.id);
+          
+          return (
           <Card 
             key={user.id}
             sx={{ 
@@ -170,7 +205,7 @@ const Users = () => {
             }}>
               <EventIcon sx={{ fontSize: 20, mr: 1 }} />
               <Typography variant="body2">
-                {user.eventsBooked} Events Booked
+                {userBookings.length} Events Booked
               </Typography>
             </Box>
 
@@ -179,9 +214,10 @@ const Users = () => {
               justifyContent: 'flex-end',
               gap: 1
             }}>
-              <IconButton 
+              <IconButton
                 size="small"
-                sx={{ 
+                onClick={() => handleOpenDialog(user)}
+                sx={{
                   color: 'rgba(255, 255, 255, 0.5)',
                   '&:hover': {
                     color: 'white',
@@ -206,7 +242,7 @@ const Users = () => {
               </IconButton>
             </Box>
           </Card>
-        ))}
+        )})}
       </Box>
 
       <Dialog 
@@ -222,14 +258,14 @@ const Users = () => {
         }}
       >
         <DialogTitle sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          Add New User
+          {editingUser ? 'Edit User' : 'Add New User'}
         </DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
           <TextField
             fullWidth
             label="Name"
-            value={newUser.name}
-            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+            value={userForm.name}
+            onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
             sx={{
               mb: 2,
               '& .MuiOutlinedInput-root': {
@@ -249,8 +285,8 @@ const Users = () => {
           <TextField
             fullWidth
             label="Email"
-            value={newUser.email}
-            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            value={userForm.email}
+            onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
             sx={{
               mb: 2,
               '& .MuiOutlinedInput-root': {
@@ -271,8 +307,8 @@ const Users = () => {
             fullWidth
             type="password"
             label="Password"
-            value={newUser.password}
-            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+            value={userForm.password}
+            onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
             sx={{
               '& .MuiOutlinedInput-root': {
                 color: 'white',
@@ -290,8 +326,8 @@ const Users = () => {
           />
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 2 }}>
-          <Button 
-            onClick={() => setOpenDialog(false)}
+          <Button
+            onClick={handleCloseDialog}
             sx={{ 
               color: 'rgba(255, 255, 255, 0.7)',
               '&:hover': {
@@ -303,7 +339,7 @@ const Users = () => {
           </Button>
           <Button
             variant="contained"
-            onClick={handleAddUser}
+            onClick={handleSubmit}
             sx={{ 
               backgroundColor: '#7c4dff',
               '&:hover': {
@@ -311,11 +347,11 @@ const Users = () => {
               }
             }}
           >
-            Create
+            {editingUser ? 'Save Changes' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Layout>
   );
 };
 

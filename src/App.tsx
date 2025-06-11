@@ -4,7 +4,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Events from './pages/Events';
 import Users from './pages/Users';
 import Bookings from './pages/Bookings';
-import Layout from './components/Layout';
 
 const darkTheme = createTheme({
   palette: {
@@ -40,13 +39,11 @@ function App() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Events />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/bookings" element={<Bookings />} />
-          </Routes>
-        </Layout>
+        <Routes>
+          <Route path="/" element={<Events />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/bookings" element={<Bookings />} />
+        </Routes>
       </Router>
     </ThemeProvider>
   );

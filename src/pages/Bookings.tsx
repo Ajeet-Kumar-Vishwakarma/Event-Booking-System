@@ -1,8 +1,20 @@
 import { Box, Typography, Card, Avatar, Chip } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import {
+  bookings as mockBookings,
+  events as mockEvents,
+  users as mockUsers,
+  Event,
+  User
+} from '../mockData';
+import Layout from '../components/Layout';
 
-interface Booking {
+const STORED_BOOKINGS_KEY = 'eventBookingSystem_bookings';
+const STORED_EVENTS_KEY = 'eventBookingSystem_events';
+const STORED_USERS_KEY = 'eventBookingSystem_users';
+
+interface DisplayBooking {
   id: number;
   eventTitle: string;
   eventImage: string;
@@ -16,47 +28,49 @@ interface Booking {
   status: 'confirmed' | 'pending' | 'cancelled';
 }
 
-const bookingsData: Booking[] = [
-  {
-    id: 1,
-    eventTitle: 'Tech Summit 2025',
-    eventImage: '/techfest.png',
-    date: 'Jul 15, 2025',
-    time: '10:00 AM',
-    location: 'Dubai',
-    user: {
-      name: 'Aditi Sharma',
-      email: 'aditi@example.com'
-    },
-    status: 'confirmed'
-  },
-  {
-    id: 2,
-    eventTitle: 'Startup Networking',
-    eventImage: '/startupTalk.png',
-    date: 'Jul 20, 2025',
-    time: '2:00 PM',
-    location: 'Silicon Valley',
-    user: {
-      name: 'John Doe',
-      email: 'john@example.com'
-    },
-    status: 'pending'
-  },
-  {
-    id: 3,
-    eventTitle: 'AI & ML Workshop',
-    eventImage: '/techfest.png',
-    date: 'Aug 1, 2025',
-    time: '9:00 AM',
-    location: 'New York',
-    user: {
-      name: 'Sarah Wilson',
-      email: 'sarah@example.com'
-    },
-    status: 'confirmed'
+const processBookings = (): DisplayBooking[] => {
+  // Get stored data
+  const storedBookings = localStorage.getItem(STORED_BOOKINGS_KEY);
+  const storedEvents = localStorage.getItem(STORED_EVENTS_KEY);
+  const storedUsers = localStorage.getItem(STORED_USERS_KEY);
+
+  // Combine mock and stored data
+  const allBookings = [...mockBookings];
+  if (storedBookings) {
+    allBookings.push(...JSON.parse(storedBookings));
   }
-];
+
+  // Get events and users data
+  const allEvents = storedEvents ? JSON.parse(storedEvents) : mockEvents;
+  const allUsers = storedUsers ? JSON.parse(storedUsers) : mockUsers;
+
+  // Filter out bookings for deleted events and users
+  const validBookings = allBookings.filter(booking => {
+    const eventExists = allEvents.some((e: Event) => e.id === booking.eventId);
+    const userExists = allUsers.some((u: User) => u.id === booking.userId);
+    return eventExists && userExists;
+  });
+
+  // Convert valid bookings to display format
+  return validBookings.map(booking => {
+    const event = allEvents.find((e: Event) => e.id === booking.eventId)!;
+    const user = allUsers.find((u: User) => u.id === booking.userId)!;
+
+    return {
+      id: booking.id,
+      eventTitle: event.title,
+      eventImage: event.image,
+      date: event.date,
+      time: event.time,
+      location: event.location,
+      user: {
+        name: user.name,
+        email: user.email
+      },
+      status: new Date(booking.bookingDate) > new Date() ? 'pending' : 'confirmed'
+    };
+  });
+};
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -72,8 +86,10 @@ const getStatusColor = (status: string) => {
 };
 
 const Bookings = () => {
+  const bookingsData = processBookings();
+
   return (
-    <Box>
+    <Layout>
       <Typography 
         variant="h4" 
         component="h1"
@@ -196,7 +212,7 @@ const Bookings = () => {
           </Card>
         ))}
       </Box>
-    </Box>
+    </Layout>
   );
 };
 
